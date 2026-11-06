@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: stg_wms__movimentos
+    description: Razão limpo, com uma linha por movimento na última versão recebida.
+    columns:
+      - name: movimento_id
+        data_tests: [unique, not_null]
+      - name: sku
+        data_tests: [not_null]
+      - name: tipo_origem
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('tipos_movimento')
+                field: tipo_origem
+      - name: unidade
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [UN, CX]
+
+  - name: stg_erp__produtos
+    columns:
+      - name: sku
+        data_tests: [unique, not_null]
+      - name: custo
+        data_tests: [not_null, nao_negativo]
+      - name: preco
+        data_tests: [not_null, nao_negativo]
+      - name: unidades_por_caixa
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [6, 10, 12, 24]
+                quote: false
+      - name: fornecedor_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_erp__fornecedores')
+                field: fornecedor_id
+
+  - name: stg_erp__fornecedores
+    columns:
+      - name: fornecedor_id
+        data_tests: [unique, not_null]
+
+  - name: stg_wms__saldo_inicial
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [sku, cd_id]
+    columns:
+      - name: quantidade
+        data_tests: [not_null, nao_negativo]
+
+  - name: stg_compras__recebimentos
+    columns:
+      - name: emitido_em
+        data_tests: [not_null]
+      - name: previsto_para
+        data_tests: [not_null]

@@ -1,0 +1,43 @@
+name: estoque
+version: "1.0.0"
+config-version: 2
+profile: estoque
+
+model-paths: [models]
+seed-paths: [seeds]
+snapshot-paths: [snapshots]
+macro-paths: [macros]
+test-paths: [tests]
+
+vars:
+  janela_consumo_dias: 90       # base do consumo médio em giro e cobertura
+  dias_sem_venda_parado: 90     # sem saída nesse prazo, o estoque é considerado parado
+  dias_excesso_cobertura: 120   # cobertura acima disso é excesso
+  dias_risco_cobertura: 7       # cobertura abaixo disso é risco de ruptura
+  tolerancia_contagem: 0.02     # diferença relativa aceita em uma contagem
+  data_inicio: "2024-12-31"
+  data_fim: "2025-12-31"
+
+models:
+  estoque:
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+    marts:
+      core:
+        +schema: core
+        +materialized: table
+      analises:
+        +schema: analises
+        +materialized: table
+
+seeds:
+  estoque:
+    +schema: referencia
+
+snapshots:
+  estoque:
+    +schema: snapshots

@@ -1,0 +1,14 @@
+estoque:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('ESTOQUE_DUCKDB', '../warehouse/estoque.duckdb') }}"
+      threads: 4
+    bigquery:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GCP_PROJECT', 'defina-gcp-project') }}"
+      dataset: "{{ env_var('BQ_DATASET', 'estoque') }}"
+      location: "{{ env_var('BQ_LOCATION', 'southamerica-east1') }}"
+      threads: 4

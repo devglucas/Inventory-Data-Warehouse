@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Arquivos carregados como texto pelo src/elt.py. Tudo aqui é append-only.
+    schema: raw
+    tables:
+      - name: movimentos
+        description: Razão do WMS, com reenvios, correções e atrasos.
+      - name: produtos
+        description: Catálogo completo do ERP no fim de cada mês.
+      - name: fornecedores
+      - name: saldo_inicial
+      - name: contagens
+      - name: demanda_perdida
+      - name: pedidos_compra
+        description: Pedidos achatados em uma linha por recebimento de item.

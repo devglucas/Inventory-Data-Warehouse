@@ -1,0 +1,10 @@
+snapshots:
+  - name: snap_produtos
+    description: >
+      Histórico do catálogo (SCD tipo 2). A estratégia timestamp usa atualizado_em como início
+      da versão, então a validade é a da mudança no ERP, e não a do dia em que o snapshot rodou.
+    relation: ref('stg_erp__produtos')
+    config:
+      unique_key: sku
+      strategy: timestamp
+      updated_at: atualizado_em
