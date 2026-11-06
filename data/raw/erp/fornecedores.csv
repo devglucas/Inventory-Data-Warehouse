@@ -1,0 +1,9 @@
+fornecedor_id,nome,categoria_principal,prazo_contratual_dias
+F01,Metalúrgica Forte,Ferramentas,9
+F02,Aço Sul Ferramentas,Ferramentas,12
+F03,Eletrofio Condutores,Elétrica,7
+F04,Luminar Componentes,Elétrica,14
+F05,Tubonorte,Hidráulica,10
+F06,Proteja EPIs,EPI,8
+F07,Cor Viva Tintas,Pintura,6
+F08,Rosca Fina Fixadores,Fixadores,5

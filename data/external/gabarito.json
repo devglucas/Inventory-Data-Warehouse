@@ -1,0 +1,39 @@
+{
+  "movimentos_validos": 137492,
+  "saldo_inicial_unidades": 52537,
+  "saldo_total_fim_do_mes": {
+    "2025-01": 33841,
+    "2025-02": 38657,
+    "2025-03": 34617,
+    "2025-04": 31890,
+    "2025-05": 33917,
+    "2025-06": 38160,
+    "2025-07": 37535,
+    "2025-08": 31900,
+    "2025-09": 33388,
+    "2025-10": 34033,
+    "2025-11": 28815,
+    "2025-12": 32112
+  },
+  "saldo_final_por_cd": {
+    "GRU": 16548,
+    "CWB": 7756,
+    "REC": 7808
+  },
+  "valor_estoque_final": 977891.74,
+  "unidades_em_transito_no_fim": 8,
+  "unidades_demanda_perdida": 5708,
+  "unidades_vendidas": 399767,
+  "pedidos_de_compra": 3691,
+  "contagens": 2523,
+  "fornecedor_atrasado": "F01",
+  "skus_descontinuados": 12,
+  "sujeira": {
+    "linhas_exportadas": 138331,
+    "reenviadas": 507,
+    "corrigidas": 237,
+    "sku_inexistente": 68,
+    "quantidade_invalida": 27,
+    "tardias": 614
+  }
+}
