@@ -1,0 +1,4 @@
+-r requirements.txt
+dbt-bigquery>=1.12
+google-cloud-bigquery>=3.25
+pandas-gbq>=0.23
