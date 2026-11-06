@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: mart_curva_abc
+    description: Classe ABC de cada SKU pela receita acumulada.
+    columns:
+      - name: sku
+        data_tests: [unique, not_null]
+      - name: classe_abc
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [A, B, C]
+
+  - name: mart_giro_cobertura
+    description: Situação atual de cada SKU em cada CD. Contrato fixo porque alimenta o relatório.
+    config:
+      contract:
+        enforced: true
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [sku, cd_id]
+    columns:
+      - {name: sku, data_type: string, constraints: [{type: not_null}]}
+      - {name: cd_id, data_type: string, constraints: [{type: not_null}]}
+      - {name: categoria, data_type: string}
+      - {name: ativo, data_type: boolean}
+      - {name: classe_abc, data_type: string}
+      - {name: saldo, data_type: int64}
+      - {name: valor_estoque, data_type: numeric}
+      - {name: consumo_diario, data_type: numeric}
+      - {name: dias_cobertura, data_type: numeric}
+      - {name: giro_anual, data_type: numeric}
+      - name: situacao
+        data_type: string
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [ruptura, risco, saudavel, excesso, sem_giro]
+
+  - name: mart_valor_estoque_mensal
+    description: Valor do estoque no fim de cada mês, por CD e categoria.
+  - name: mart_ruptura_mensal
+    description: Dias sem estoque e demanda perdida por mês e fornecedor.
+    columns:
+      - name: taxa_ruptura
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+  - name: mart_estoque_parado
+    description: Saldo sem venda há mais tempo que o limite.
+  - name: mart_fornecedores
+    description: Lead time, atraso e OTIF por fornecedor e trimestre.
+    columns:
+      - name: otif
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+  - name: mart_acuracidade
+    description: Acuracidade das contagens por CD e categoria.
+  - name: mart_rebalanceamento
+    description: Transferências sugeridas entre CDs antes de comprar.
+  - name: mart_em_transito
+    description: Transferências que saíram e ainda não chegaram.
+
+exposures:
+  - name: relatorio_de_estoque
+    type: analysis
+    maturity: medium
+    description: Relatório e gráficos em output/, gerados pelo main.py.
+    owner:
+      name: Time de Dados
+    depends_on:
+      - ref('mart_giro_cobertura')
+      - ref('mart_ruptura_mensal')
+      - ref('mart_fornecedores')
+      - ref('mart_acuracidade')
+      - ref('mart_estoque_parado')
+      - ref('mart_rebalanceamento')
+
+unit_tests:
+  - name: curva_abc_respeita_os_cortes
+    model: mart_curva_abc
+    given:
+      - input: ref('fct_estoque_diario')
+        rows:
+          - {sku: A, saidas_venda: 80, preco_vigente: 1}
+          - {sku: B, saidas_venda: 15, preco_vigente: 1}
+          - {sku: C, saidas_venda: 5, preco_vigente: 1}
+    expect:
+      rows:
+        - {sku: A, classe_abc: A}
+        - {sku: B, classe_abc: B}
+        - {sku: C, classe_abc: C}
