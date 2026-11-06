@@ -1,0 +1,36 @@
+{
+  "executado_em": "2026-11-06T12:34:31+00:00",
+  "sucesso": true,
+  "duracao_s": 8.66,
+  "linhas_carregadas": 153361,
+  "dbt": {
+    "por_tipo": {
+      "model": 27,
+      "seed": 3,
+      "test": 64,
+      "unit_test": 5,
+      "snapshot": 1,
+      "exposure": 1
+    },
+    "por_status": {
+      "success": 31,
+      "pass": 67,
+      "warn": 2,
+      "no-op": 1
+    },
+    "alertas": [
+      {
+        "teste": "contagem_bate_com_saldo",
+        "linhas": 5
+      },
+      {
+        "teste": "saldo_nao_negativo",
+        "linhas": 17
+      }
+    ]
+  },
+  "conferencias": {
+    "total": 11,
+    "com_falha": 0
+  }
+}

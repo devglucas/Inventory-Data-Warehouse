@@ -1,0 +1,15 @@
+cd_id,situacao,sku_cds,valor_estoque
+CWB,excesso,1,163.5900
+CWB,risco,5,7470.7000
+CWB,ruptura,2,0.0000
+CWB,saudavel,300,223101.6600
+CWB,sem_giro,12,5562.3800
+GRU,risco,4,299.1400
+GRU,ruptura,2,0.0000
+GRU,saudavel,302,494558.0600
+GRU,sem_giro,12,7537.2500
+REC,excesso,49,50610.1600
+REC,risco,2,228.2600
+REC,ruptura,1,0.0000
+REC,saudavel,255,183755.2300
+REC,sem_giro,13,4605.3100

@@ -1,0 +1,9 @@
+fornecedor_id,nome,taxa_ruptura,unidades_perdidas,receita_perdida,margem_perdida
+F01,Metalúrgica Forte,0.0293,2626.0000,101604.6100,39045.1100
+F04,Luminar Componentes,0.0087,2291.0000,91854.0900,21718.0900
+F05,Tubonorte,0.0055,350.0000,14568.3100,5072.3200
+F06,Proteja EPIs,0.0046,86.0000,7570.0600,2788.8900
+F02,Aço Sul Ferramentas,0.0060,177.0000,7425.3800,2640.8800
+F03,Eletrofio Condutores,0.0034,94.0000,7195.4000,2290.5400
+F07,Cor Viva Tintas,0.0031,46.0000,2227.0000,785.7500
+F08,Rosca Fina Fixadores,0.0030,38.0000,1481.6900,551.2400
