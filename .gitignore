@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Segredos: nunca versionar
+.env
+*.json.key
+
+# Warehouse local e artefatos do dbt (recriados com `python main.py`)
+warehouse/*
+!warehouse/.gitkeep
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+logs/
+output/logs/
+
+# SO / editores
+.DS_Store
+.vscode/
+.idea/
