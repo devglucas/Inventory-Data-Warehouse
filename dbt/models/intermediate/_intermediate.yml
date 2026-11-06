@@ -1,0 +1,84 @@
+version: 2
+
+models:
+  - name: int_movimentos_classificados
+    description: Cada movimento convertido em impacto no saldo, em unidades.
+    columns:
+      - name: movimento_id
+        data_tests: [unique, not_null]
+      - name: impacto
+        data_tests: [not_null]
+
+  - name: int_movimentos_rejeitados
+    description: Movimentos que não puderam ser classificados, com o motivo.
+    columns:
+      - name: motivo
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [sku_desconhecido, quantidade_invalida]
+              config:
+                severity: warn
+
+unit_tests:
+  - name: caixa_usa_o_fator_vigente_na_data
+    description: A mesma caixa vale 12 unidades antes da troca de embalagem e 10 depois.
+    model: int_movimentos_classificados
+    given:
+      - input: ref('stg_wms__movimentos')
+        rows:
+          - {movimento_id: 1, sku: SKU-00001, cd_id: GRU, tipo_origem: ENTRADA_COMPRA, quantidade: 2, unidade: CX, ocorrido_em: "2025-03-01 10:00:00"}
+          - {movimento_id: 2, sku: SKU-00001, cd_id: GRU, tipo_origem: ENTRADA_COMPRA, quantidade: 2, unidade: CX, ocorrido_em: "2025-05-01 10:00:00"}
+      - input: ref('snap_produtos')
+        rows:
+          - {sku: SKU-00001, unidades_por_caixa: 12, custo: 5, dbt_valid_from: "2024-01-01 00:00:00", dbt_valid_to: "2025-04-10 10:00:00"}
+          - {sku: SKU-00001, unidades_por_caixa: 10, custo: 5, dbt_valid_from: "2025-04-10 10:00:00", dbt_valid_to: null}
+      - input: ref('tipos_movimento')
+        rows:
+          - {tipo_origem: ENTRADA_COMPRA, tipo: ENTRADA_COMPRA, sinal: 1, grupo: compra}
+    expect:
+      rows:
+        - {movimento_id: 1, impacto: 24}
+        - {movimento_id: 2, impacto: 20}
+
+  - name: sinal_vem_do_tipo_e_nao_da_quantidade
+    description: Antes de julho a venda vinha positiva; depois, negativa. O impacto é o mesmo.
+    model: int_movimentos_classificados
+    given:
+      - input: ref('stg_wms__movimentos')
+        rows:
+          - {movimento_id: 1, sku: SKU-00001, cd_id: GRU, tipo_origem: SAIDA_VENDA, quantidade: 3, unidade: UN, ocorrido_em: "2025-03-01 10:00:00"}
+          - {movimento_id: 2, sku: SKU-00001, cd_id: GRU, tipo_origem: VENDA, quantidade: -3, unidade: UN, ocorrido_em: "2025-08-01 10:00:00"}
+          - {movimento_id: 3, sku: SKU-00001, cd_id: GRU, tipo_origem: AJUSTE_INVENTARIO, quantidade: -2, unidade: UN, ocorrido_em: "2025-08-02 10:00:00"}
+      - input: ref('snap_produtos')
+        rows:
+          - {sku: SKU-00001, unidades_por_caixa: 12, custo: 5, dbt_valid_from: "2024-01-01 00:00:00", dbt_valid_to: null}
+      - input: ref('tipos_movimento')
+        rows:
+          - {tipo_origem: SAIDA_VENDA, tipo: VENDA, sinal: -1, grupo: venda}
+          - {tipo_origem: VENDA, tipo: VENDA, sinal: -1, grupo: venda}
+          - {tipo_origem: AJUSTE_INVENTARIO, tipo: AJUSTE_INVENTARIO, sinal: 0, grupo: ajuste}
+    expect:
+      rows:
+        - {movimento_id: 1, impacto: -3}
+        - {movimento_id: 2, impacto: -3}
+        - {movimento_id: 3, impacto: -2}
+
+  - name: estorno_desfaz_o_movimento_original
+    model: int_movimentos_classificados
+    given:
+      - input: ref('stg_wms__movimentos')
+        rows:
+          - {movimento_id: 10, sku: SKU-00001, cd_id: GRU, tipo_origem: VENDA, quantidade: 7, unidade: UN, ocorrido_em: "2025-03-01 10:00:00"}
+          - {movimento_id: 11, sku: SKU-00001, cd_id: GRU, tipo_origem: ESTORNO, quantidade: 7, unidade: UN, ocorrido_em: "2025-03-03 10:00:00", referencia: "10"}
+      - input: ref('snap_produtos')
+        rows:
+          - {sku: SKU-00001, unidades_por_caixa: 12, custo: 5, dbt_valid_from: "2024-01-01 00:00:00", dbt_valid_to: null}
+      - input: ref('tipos_movimento')
+        rows:
+          - {tipo_origem: VENDA, tipo: VENDA, sinal: -1, grupo: venda}
+          - {tipo_origem: ESTORNO, tipo: ESTORNO, sinal: 0, grupo: estorno}
+    expect:
+      rows:
+        - {movimento_id: 10, impacto: -7}
+        - {movimento_id: 11, impacto: 7}

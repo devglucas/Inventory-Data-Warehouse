@@ -1,0 +1,97 @@
+version: 2
+
+models:
+  - name: fct_movimentos
+    description: Razão de estoque, um movimento por linha. Incremental, com correções por merge.
+    columns:
+      - name: movimento_id
+        data_tests: [unique, not_null]
+      - name: cd_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_cd')
+                field: cd_id
+      - name: tipo
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [ENTRADA_COMPRA, VENDA, DEVOLUCAO, TRANSF_SAIDA, TRANSF_ENTRADA, PERDA, AJUSTE_INVENTARIO, ESTORNO]
+      - name: unidades
+        data_tests: [not_null, nao_negativo]
+
+  - name: fct_estoque_diario
+    description: Saldo de cada SKU em cada CD em todos os dias do ano.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [sku, cd_id, data]
+    columns:
+      - name: saldo
+        data_tests: [not_null]
+      - name: custo_vigente
+        data_tests: [not_null]
+
+  - name: dim_produto
+    description: Catálogo com histórico. Uma linha por versão de cada SKU.
+    columns:
+      - name: produto_chave
+        data_tests: [unique, not_null]
+      - name: sku
+        data_tests: [not_null]
+
+  - name: dim_cd
+    columns:
+      - name: cd_id
+        data_tests: [unique, not_null]
+
+  - name: dim_fornecedor
+    columns:
+      - name: fornecedor_id
+        data_tests: [unique, not_null]
+
+  - name: dim_data
+    columns:
+      - name: data
+        data_tests: [unique, not_null]
+
+  - name: fct_contagens
+    description: Contagens físicas contra o saldo do sistema.
+    columns:
+      - name: quantidade_contada
+        data_tests: [not_null, nao_negativo]
+
+  - name: fct_demanda_perdida
+    description: Demanda não atendida por falta de estoque, com receita e margem perdidas.
+    columns:
+      - name: quantidade
+        data_tests: [not_null, nao_negativo]
+
+  - name: fct_itens_pedido
+    description: Itens de pedido de compra, com prazo e OTIF.
+    columns:
+      - name: item_chave
+        data_tests: [unique, not_null]
+      - name: unidades_recebidas
+        data_tests: [nao_negativo]
+      - name: fornecedor_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_fornecedor')
+                field: fornecedor_id
+
+unit_tests:
+  - name: otif_exige_prazo_e_quantidade
+    model: fct_itens_pedido
+    given:
+      - input: ref('stg_compras__recebimentos')
+        rows:
+          - {pedido_id: P1, fornecedor_id: F1, cd_id: GRU, sku: A, emitido_em: "2025-01-01", previsto_para: "2025-01-10", recebido_em: "2025-01-09", unidades_pedidas: 10, unidades_recebidas: 10, custo_unitario: 1, recebimento_ordem: 1}
+          - {pedido_id: P2, fornecedor_id: F1, cd_id: GRU, sku: A, emitido_em: "2025-01-01", previsto_para: "2025-01-10", recebido_em: "2025-01-12", unidades_pedidas: 10, unidades_recebidas: 10, custo_unitario: 1, recebimento_ordem: 1}
+          - {pedido_id: P3, fornecedor_id: F1, cd_id: GRU, sku: A, emitido_em: "2025-01-01", previsto_para: "2025-01-10", recebido_em: "2025-01-05", unidades_pedidas: 10, unidades_recebidas: 7, custo_unitario: 1, recebimento_ordem: 1}
+    expect:
+      rows:
+        - {pedido_id: P1, no_prazo_e_completo: true}
+        - {pedido_id: P2, no_prazo_e_completo: false}
+        - {pedido_id: P3, no_prazo_e_completo: false}
